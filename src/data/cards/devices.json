@@ -1,12 +1,12 @@
 [
     {
-        "name": "MacBookk Pro 16\"",
+        "name": "MEOW 橘宝R16 A5X1",
         "image": "https://img1.imgtp.com/2023/08/23/Example.png",
         "description": "主力开发机，M3 Pro 芯片，36GB 内存。",
         "specs": {
             "condition": "良好",
-            "purchaseDate": "2024-9",
-            "warranty": "已过保"
+            "purchaseDate": "2025-7",
+            "warranty": "在保"
         },
         "tags": [
             {
@@ -14,16 +14,19 @@
             },
             {
                 "name": "开发"
+            },
+            {
+                "name": "娱乐"
             }
         ]
     },
     {
-        "name": "OnePlus 12",
-        "image": "https://img1.imgtp.com/2023/08/23/Example2.png",
-        "description": "日常主力手机，坏后面板了",
+        "name": "REDMI Turbo 3",
+        "image": "https://img1.imgtp.com/2023/08/23/Example3.png",
+        "description": "平时用的手机，非常流畅",
         "specs": {
-            "condition": "💩",
-            "purchaseDate": "2021-10",
+            "condition": "良好",
+            "purchaseDate": "2024-4",
             "warranty": "已过保"
         },
         "tags": [
@@ -36,21 +39,22 @@
         ]
     },
     {
-        "name": "iPad Pro 11\"",
+        "name": "REDMI Note 9 Pro",
         "image": "https://img1.imgtp.com/2023/08/23/Example3.png",
-        "description": "娱乐与阅读工具，配备 Apple Pencil。",
+        "description": "备用机，日常使用有点卡",
         "specs": {
-            "condition": "一般",
-            "purchaseDate": "2020-05",
+            "condition": "正常",
+            "purchaseDate": "2021-1",
             "warranty": "已过保"
         },
         "tags": [
             {
-                "name": "娱乐"
+                "name": "移动"
             },
             {
-                "name": "绘画"
+                "name": "通讯"
             }
         ]
     }
+
 ]

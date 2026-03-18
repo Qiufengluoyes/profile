@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 
 // 导入旅行数据
 import travelDataJson from '../data/travels/travelData.json';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 // 添加被遮挡文本的样式
 const censoredTextStyle = `
@@ -924,7 +925,7 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="relative w-full max-w-2xl max-h-[80vh] overflow-auto rounded-[28px] bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-2xl border border-white/30 dark:border-white/10 shadow-2xl will-change-transform"
+        className="relative w-full max-w-2xl max-h-[80vh] overflow-auto overscroll-contain rounded-[28px] bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-2xl border border-white/30 dark:border-white/10 shadow-2xl will-change-transform"
         onClick={(e) => e.stopPropagation()}
       >
           {/* 封面图片 */}
@@ -999,11 +1000,12 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
 });
 
 // 主页面组件
-const Travels: React.FC = () => {
-  const [selectedDestination, setSelectedDestination] = useState<TravelDestination | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hoveredDestination, setHoveredDestination] = useState<string | null>(null);
-  const openTimeoutRef = useRef<number | null>(null);
+  const Travels: React.FC = () => {
+    const [selectedDestination, setSelectedDestination] = useState<TravelDestination | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [hoveredDestination, setHoveredDestination] = useState<string | null>(null);
+    const openTimeoutRef = useRef<number | null>(null);
+    const { lockScroll, unlockScroll } = useScrollLock();
 
   // 添加遮挡文本的样式
   useEffect(() => {
@@ -1038,13 +1040,25 @@ const Travels: React.FC = () => {
   }, [preloadDestinationImages]);
 
   // 缓存关闭模态框函数
-  const handleCloseModal = useCallback(() => {
-    if (openTimeoutRef.current !== null) {
-      window.clearTimeout(openTimeoutRef.current);
-      openTimeoutRef.current = null;
-    }
-    setIsModalOpen(false);
-  }, []);
+    const handleCloseModal = useCallback(() => {
+      if (openTimeoutRef.current !== null) {
+        window.clearTimeout(openTimeoutRef.current);
+        openTimeoutRef.current = null;
+      }
+      setIsModalOpen(false);
+    }, []);
+
+    useEffect(() => {
+      if (isModalOpen) {
+        lockScroll();
+      }
+    }, [isModalOpen, lockScroll]);
+
+    useEffect(() => {
+      return () => {
+        unlockScroll();
+      };
+    }, [unlockScroll]);
 
   useEffect(() => {
     return () => {
@@ -1318,7 +1332,6 @@ const Travels: React.FC = () => {
             <motion.div
               key={destination.id}
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 250, damping: 25, mass: 1.0 }}
               className="bg-white/40 dark:bg-[#1c1c1e]/60 backdrop-blur-xl rounded-[24px] overflow-hidden border border-white/30 dark:border-white/10 shadow-lg shadow-black/5"
               onMouseEnter={() => preloadDestinationImages(destination.id)}
@@ -1364,7 +1377,7 @@ const Travels: React.FC = () => {
                   {/* 查看详情按钮 */}
                   <button
                     onClick={() => handleSelectDestination(destination)}
-                    className="mt-2 flex items-center text-[#007AFF] text-sm font-medium hover:opacity-70 transition-opacity"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[var(--glass-bg)] px-4 py-2.5 text-sm font-semibold text-[#2463EB] transition-all duration-200 active:scale-[0.98] dark:bg-[#1C4ED8] dark:text-white"
                   >
                     查看更多详情
                     <ChevronRightIcon className="w-4 h-4 ml-1" />
@@ -1379,7 +1392,10 @@ const Travels: React.FC = () => {
       {/* 目的地详情模态框 */}
       <AnimatePresence
         mode="wait"
-        onExitComplete={() => setSelectedDestination(null)}
+        onExitComplete={() => {
+          setSelectedDestination(null);
+          unlockScroll();
+        }}
       >
         {isModalOpen && selectedDestination && (
           <DestinationModal
