@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, type ComponentType, type SVGProps } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import {
@@ -14,7 +14,14 @@ import {
 import ThemeToggle from './ThemeToggle';
 import { usePerformanceMode } from '../contexts/PerformanceContext';
 
-const NAV_ITEMS = [
+type NavItem = {
+    id: string;
+    path: string;
+    label: string;
+    icon: ComponentType<SVGProps<SVGSVGElement>>;
+};
+
+const NAV_ITEMS: NavItem[] = [
     { id: 'home', path: '/', label: '首页', icon: HomeIcon },
     { id: 'blog', path: 'https://blog.feng1026.top', label: '博客', icon: PencilIcon },
     { id: 'travels', path: '/travels', label: '足迹', icon: MapPinIcon },
@@ -22,8 +29,7 @@ const NAV_ITEMS = [
     { id: 'about', path: '/about', label: '关于', icon: InformationCircleIcon },
 ];
 
-const SECONDARY_ITEMS = [
-];
+const SECONDARY_ITEMS: NavItem[] = [];
 
 const springTransition = {
     type: "spring",
