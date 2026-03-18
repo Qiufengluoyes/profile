@@ -64,6 +64,11 @@ body {
   will-change: transform, opacity;
 }
 
+/* 让毛玻璃在首次渲染就进入合成层，避免“卡片先出现、模糊后出现” */
+[class*="backdrop-blur"] {
+  will-change: backdrop-filter;
+}
+
 /* 添加基础动画类 */
 @keyframes fadeIn {
   from {
