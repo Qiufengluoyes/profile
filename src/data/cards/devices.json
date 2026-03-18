@@ -1,0 +1,56 @@
+[
+    {
+        "name": "MacBookk Pro 16\"",
+        "image": "https://img1.imgtp.com/2023/08/23/Example.png",
+        "description": "主力开发机，M3 Pro 芯片，36GB 内存。",
+        "specs": {
+            "condition": "良好",
+            "purchaseDate": "2024-9",
+            "warranty": "已过保"
+        },
+        "tags": [
+            {
+                "name": "主力"
+            },
+            {
+                "name": "开发"
+            }
+        ]
+    },
+    {
+        "name": "OnePlus 12",
+        "image": "https://img1.imgtp.com/2023/08/23/Example2.png",
+        "description": "日常主力手机，坏后面板了",
+        "specs": {
+            "condition": "💩",
+            "purchaseDate": "2021-10",
+            "warranty": "已过保"
+        },
+        "tags": [
+            {
+                "name": "移动"
+            },
+            {
+                "name": "通讯"
+            }
+        ]
+    },
+    {
+        "name": "iPad Pro 11\"",
+        "image": "https://img1.imgtp.com/2023/08/23/Example3.png",
+        "description": "娱乐与阅读工具，配备 Apple Pencil。",
+        "specs": {
+            "condition": "一般",
+            "purchaseDate": "2020-05",
+            "warranty": "已过保"
+        },
+        "tags": [
+            {
+                "name": "娱乐"
+            },
+            {
+                "name": "绘画"
+            }
+        ]
+    }
+]

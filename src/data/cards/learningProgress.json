@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Python",
+    "value": "30",
+    "total": "100",
+    "color": "blue",
+    "description": "学这玩("
+  },
+  {
+    "name": "Rust",
+    "value": "3",
+    "total": "100",
+    "color": "orange",
+    "description": "zrll!zrll!"
+  },
+  {
+    "name": "K8S",
+    "value": "40",
+    "total": "100",
+    "color": "blue",
+    "description": "连心爱的男人都留不住，k8s再叼又有何用"
+  },
+  {
+    "name": "云计算",
+    "value": "35",
+    "total": "100",
+    "color": "indigo",
+    "description": "要不是这草台班子比赛..."
+  },
+  {
+    "name": "JavaScript",
+    "value": "20",
+    "total": "100",
+    "color": "yellow",
+    "description": "学不会😭"
+  },
+  {
+    "name": "C1驾驶证",
+    "value": "100",
+    "total": "100",
+    "color": "green",
+    "description": "为什么科二能挂两次!😡"
+  }
+]
