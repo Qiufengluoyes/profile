@@ -138,7 +138,7 @@ const ActivityModal: React.FC<ActivityModalProps> = ({
                                             layoutId={`${layoutId}-title`}
                                             className="text-2xl font-bold text-[#1d1d1f] dark:text-white mb-1"
                                         >
-                                            最近发生的事
+                                            时间线 & 动态
                                         </motion.h2>
                                         <motion.p
                                             layoutId={`${layoutId}-subtitle`}
@@ -187,20 +187,20 @@ const ActivityModal: React.FC<ActivityModalProps> = ({
                                                     initial={{ opacity: 0, x: -20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ delay: 0.2 + (idx * 0.1) }}
-                                                    className="relative pl-20"
+                                                    className="relative pl-20 pt-6"
                                                 >
                                                     {/* Timeline Node */}
-                                                    <div className={`absolute left-0 w-14 h-14 rounded-full ${isImage ? 'bg-transparent overflow-hidden' : getIconBgColor(event.color)} flex items-center justify-center shadow-lg border-4 border-[#f5f5f7] dark:border-[#1c1c1e] z-10`}>
+                                                    <div className={`absolute left-0 top-0 w-14 h-14 rounded-full ${isImage ? 'bg-transparent overflow-hidden' : getIconBgColor(event.color)} flex items-center justify-center shadow-lg border-4 border-[#f5f5f7] dark:border-[#1c1c1e] z-10`}>
                                                         {getIcon(event.icon)}
                                                     </div>
 
                                                     {/* Date Tag */}
-                                                    <div className="absolute left-20 top-[-25px] inline-block px-3 py-1 rounded-full bg-white dark:bg-white/10 text-xs font-semibold text-gray-500 dark:text-gray-300 shadow-sm border border-gray-100 dark:border-white/5">
+                                                    <div className="absolute left-20 top-0 inline-block px-3 py-1 rounded-full bg-white dark:bg-white/10 text-xs font-semibold text-gray-500 dark:text-gray-300 shadow-sm border border-gray-100 dark:border-white/5">
                                                         {event.date}
                                                     </div>
 
                                                     {/* Card Body */}
-                                                    <div className="bg-white dark:bg-[#2c2c2e] p-6 rounded-2xl shadow-sm border border-black/5 dark:border-white/5 hover:transform hover:scale-[1.01] transition-all duration-300">
+                                                    <div className="mt-4 bg-white dark:bg-[#2c2c2e] p-6 rounded-2xl shadow-sm border border-black/5 dark:border-white/5 transform-gpu transition-transform duration-300 hover:scale-[1.01]">
                                                         <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white mb-2">
                                                             {event.title}
                                                         </h3>

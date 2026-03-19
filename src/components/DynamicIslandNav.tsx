@@ -26,10 +26,11 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'blog', path: 'https://blog.feng1026.top', label: '博客', icon: PencilIcon },
     { id: 'travels', path: '/travels', label: '足迹', icon: MapPinIcon },
     { id: 'contact', path: '/contact', label: '联系', icon: PhoneIcon },
-    { id: 'about', path: '/about', label: '关于', icon: InformationCircleIcon },
 ];
 
-const SECONDARY_ITEMS: NavItem[] = [];
+const SECONDARY_ITEMS: NavItem[] = [
+    { id: 'about', path: '/about', label: '关于', icon: InformationCircleIcon },
+];
 
 const springTransition = {
     type: "spring",
@@ -250,6 +251,42 @@ export default function DynamicIslandNav() {
                             <div className="px-3 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                                 More
                             </div>
+
+                            {SECONDARY_ITEMS.map((item) => {
+                                const isExternal = item.path.startsWith('http');
+                                const isActive = !isExternal && (
+                                    location.pathname === item.path ||
+                                    (item.path !== '/' && location.pathname.startsWith(item.path))
+                                );
+                                const itemClassName = `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${isActive
+                                    ? 'bg-black/5 dark:bg-white/10 text-gray-900 dark:text-white'
+                                    : 'text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10'
+                                    }`;
+
+                                return isExternal ? (
+                                    <a
+                                        key={item.id}
+                                        href={item.path}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={itemClassName}
+                                    >
+                                        <item.icon
+                                            className={`w-5 h-5 ${isActive ? 'text-black dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}
+                                            strokeWidth={2}
+                                        />
+                                        <span className="font-medium">{item.label}</span>
+                                    </a>
+                                ) : (
+                                    <NavLink key={item.id} to={item.path} className={itemClassName}>
+                                        <item.icon
+                                            className={`w-5 h-5 ${isActive ? 'text-black dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}
+                                            strokeWidth={2}
+                                        />
+                                        <span className="font-medium">{item.label}</span>
+                                    </NavLink>
+                                );
+                            })}
 
                             <a
                                 href="https://github.com/damesck233/damesck"

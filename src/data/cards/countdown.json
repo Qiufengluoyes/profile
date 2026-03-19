@@ -1,16 +1,9 @@
 [
   {
-    "title": "五一劳动节",
-    "Startdate": "2026-02-28",
+    "title": "韶山研学旅行",
+    "Startdate": "2026-03-",
     "targetDate": "2026-05-01",
     "totalDays": 900,
     "top": true
-  },
-  {
-    "title": "古尔邦节放假",
-    "Startdate": "2025-03-01",
-    "targetDate": "2025-06-05",
-    "totalDays": 900,
-    "top": false
   }
 ]

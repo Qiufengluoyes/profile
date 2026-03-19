@@ -148,7 +148,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                                     layoutId={`${layoutId}-title`}
                                     className="text-[20px] font-bold text-[#1d1d1f] dark:text-white leading-none"
                                 >
-                                    最近发生的事
+                                    时间线 & 动态
                                 </motion.h3>
                                 <motion.p
                                     layoutId={`${layoutId}-subtitle`}

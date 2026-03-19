@@ -209,6 +209,14 @@ function AppInner() {
       {/* 主内容区域 - 使用Apple风格的动画 */}
       <motion.div
         key="main-content"
+        initial={{ opacity: isLowPerf ? 1 : 0 }}
+        animate={{ opacity: 1 }}
+        transition={isLowPerf ? { duration: 0 } : {
+          duration: 1.2,
+          ease: appleEaseOut,
+          delay: 0.1,
+          opacity: { duration: 1.2 }
+        }}
         className="min-h-screen flex flex-col relative"
         style={{ minHeight: '100dvh' }}
         ref={mainContentRef}
@@ -218,12 +226,30 @@ function AppInner() {
 
 
         {/* 分离的页面内容组件 */}
-        <motion.div className="flex-grow flex flex-col min-h-0">
+        <motion.div
+          initial={{ opacity: isLowPerf ? 1 : 0, y: isLowPerf ? 0 : 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={isLowPerf ? { duration: 0 } : {
+            duration: 0.8,
+            ease: appleEaseOut,
+            delay: 0.2
+          }}
+          className="flex-grow flex flex-col min-h-0"
+        >
           <PageContent />
         </motion.div>
 
         {/* 底部胶囊 */}
-        <motion.footer className="flex justify-center px-4 pb-24 md:pb-6 mt-auto">
+        <motion.footer
+          initial={{ opacity: isLowPerf ? 1 : 0, y: isLowPerf ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={isLowPerf ? { duration: 0 } : {
+            duration: 0.8,
+            ease: appleEaseOut,
+            delay: 0.5
+          }}
+          className="flex justify-center px-4 pb-24 md:pb-6 mt-auto"
+        >
           <div className="inline-flex flex-wrap justify-center items-center gap-x-1.5 gap-y-1 px-5 py-2 min-h-10 bg-white/30 dark:bg-[#1c1c1e]/30 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 rounded-full text-sm text-gray-500 dark:text-gray-400 text-center">
             <span>Designed By damesck · Copyright © 2026</span>
             <a href="/" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">damesck.net</a>
