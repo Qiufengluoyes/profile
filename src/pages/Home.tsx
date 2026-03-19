@@ -219,7 +219,6 @@ interface CountdownItem {
   title: string;
   Startdate: string;
   targetDate: string;
-  totalDays: number;
   top: boolean;
 }
 
@@ -295,7 +294,6 @@ const getMainCountdown = (countdownData: CountdownItem[]): CountdownItem => {
     title: "默认倒计时",
     Startdate: new Date().toISOString().split('T')[0],
     targetDate: new Date().toISOString().split('T')[0],
-    totalDays: 1,
     top: true
   };
 };

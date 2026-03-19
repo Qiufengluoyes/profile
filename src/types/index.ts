@@ -83,6 +83,5 @@ export interface CountdownItem {
     title: string;
     Startdate: string;
     targetDate: string;
-    totalDays: number;
     top: boolean;
 }

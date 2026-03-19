@@ -31,28 +31,46 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
         return () => { if (!isOpen) unlockScroll(); };
     }, [isOpen, lockScroll, unlockScroll]);
 
-    const calculateDaysLeft = (target: string) => {
-        const today = new Date();
-        const tgt = new Date(target);
-        today.setHours(0, 0, 0, 0);
-        tgt.setHours(0, 0, 0, 0);
-        const diff = tgt.getTime() - today.getTime();
-        return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+    const toMidnight = (value: Date) => {
+        const next = new Date(value);
+        next.setHours(0, 0, 0, 0);
+        return next;
     };
 
-    // Calculate percentage passed
-    const calculateProgress = (start: string, end: string) => {
-        const startDate = new Date(start).getTime();
-        const endDate = new Date(end).getTime();
-        const today = new Date().getTime();
-
-        if (today < startDate) return 0;
-        if (today > endDate) return 100;
-
-        const total = endDate - startDate;
-        const current = today - startDate;
-        return Math.min(Math.max((current / total) * 100, 0), 100);
+    const normalizeDateString = (value: string) => {
+        const trimmed = value.trim();
+        if (/^\d{4}-\d{2}$/.test(trimmed)) return `${trimmed}-01`;
+        if (/^\d{4}-\d{2}-$/.test(trimmed)) return `${trimmed}01`;
+        return trimmed;
     };
+
+    const parseDate = (value?: string) => {
+        if (!value) return null;
+        const normalized = normalizeDateString(value);
+        const parsed = new Date(normalized);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return toMidnight(parsed);
+    };
+
+    const todayMid = toMidnight(new Date());
+    const todayTime = todayMid.getTime();
+
+    const upcomingTitle = (() => {
+        if (!events || events.length === 0) return '无';
+        const candidates = events.map(event => {
+            const target = parseDate(event.targetDate);
+            return {
+                event,
+                targetTime: target ? target.getTime() : null
+            };
+        }).filter(item => item.targetTime !== null && (item.targetTime as number) >= todayTime);
+
+        if (candidates.length === 0) return '无';
+        candidates.sort((a, b) => (a.targetTime as number) - (b.targetTime as number));
+        return candidates[0].event.title || '无';
+    })();
 
     return (
         <AnimatePresence onExitComplete={unlockScroll}>
@@ -120,7 +138,7 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                             </motion.div>
                                         </motion.div>
                                         <h2 className="text-2xl font-bold text-[#1d1d1f] dark:text-white mb-1">
-                                            倒计日
+                                            倒数日
                                         </h2>
                                         <p className="text-[#86868b] dark:text-gray-400 text-sm">
                                             Time Flies
@@ -130,7 +148,7 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                     <div className="mt-auto p-4 rounded-xl bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-900/30">
                                         <div className="text-xs text-teal-600 dark:text-teal-400 font-medium mb-1">UPCOMING</div>
                                         <div className="text-sm font-bold text-teal-800 dark:text-teal-100 line-clamp-1">
-                                            {events[0]?.title || "No Events"}
+                                            {upcomingTitle}
                                         </div>
                                     </div>
                                 </div>
@@ -143,9 +161,46 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {events.map((event, idx) => {
-                                        const days = calculateDaysLeft(event.targetDate);
-                                        const progress = calculateProgress(event.Startdate, event.targetDate);
-                                        const isPast = days < 0;
+                                        const today = todayMid;
+                                        const todayTime = todayMid.getTime();
+                                        const startDate = parseDate(event.Startdate);
+                                        const targetDate = parseDate(event.targetDate);
+
+                                        const startTime = (startDate ?? today).getTime();
+                                        const targetTime = (targetDate ?? today).getTime();
+
+                                        const isBeforeStart = !!startDate && todayTime < startTime;
+                                        const isAfterTarget = !!targetDate && todayTime > targetTime;
+                                        const isInProgress = !isBeforeStart && !isAfterTarget;
+
+                                        const daysToStart = Math.ceil((startTime - todayTime) / MS_PER_DAY);
+                                        const daysToTarget = Math.ceil((targetTime - todayTime) / MS_PER_DAY);
+                                        const rawDays = isBeforeStart ? daysToStart : (isAfterTarget ? Math.abs(daysToTarget) : Math.max(daysToTarget, 0));
+                                        const days = Number.isFinite(rawDays) ? rawDays : 0;
+
+                                        let progress = 0;
+                                        if (startDate && targetDate) {
+                                            if (isAfterTarget) {
+                                                progress = 100;
+                                            } else if (isInProgress) {
+                                                const total = targetTime - startTime;
+                                                const current = todayTime - startTime;
+                                                progress = total > 0 ? Math.min(Math.max((current / total) * 100, 0), 100) : 0;
+                                            }
+                                        }
+
+                                        const isPast = isAfterTarget;
+                                        const dayLabel = isPast ? 'Days Ago' : (isInProgress ? 'Days Left' : 'Days');
+                                        const showProgressBar = isInProgress;
+                                        const showProgressMeta = !isBeforeStart;
+                                        const flagDate = isPast
+                                            ? (event.Startdate || event.targetDate)
+                                            : (isInProgress
+                                                ? (event.Startdate || event.targetDate)
+                                                : (isBeforeStart ? (event.Startdate || event.targetDate) : event.targetDate));
+                                        const progressDate = isPast
+                                            ? event.targetDate
+                                            : (isInProgress ? event.targetDate : event.Startdate);
 
                                         return (
                                             <motion.div
@@ -161,11 +216,11 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                                             <h3 className="font-bold text-lg text-gray-800 dark:text-white">{event.title}</h3>
                                                             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                                                                 <FlagIcon className="w-3 h-3" />
-                                                                {event.targetDate}
+                                                                {flagDate}
                                                             </p>
                                                         </div>
-                                                        <div className={`px-2 py-1 rounded-lg text-xs font-bold ${isPast ? 'bg-gray-100 text-gray-500' : 'bg-teal-100 text-teal-600'}`}>
-                                                            {isPast ? 'ENDED' : 'ACTIVE'}
+                                                        <div className={`px-2 py-1 rounded-lg text-xs font-bold ${(isPast || isBeforeStart) ? 'bg-gray-100 text-gray-500' : 'bg-teal-100 text-teal-600'}`}>
+                                                            {isBeforeStart ? 'PLANED' : (isPast ? 'ENDED' : 'ACTIVE')}
                                                         </div>
                                                     </div>
 
@@ -174,23 +229,27 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                                             {Math.abs(days)}
                                                         </span>
                                                         <span className="text-sm font-medium text-gray-500 mb-1.5 ml-1">
-                                                            {isPast ? 'Days Ago' : 'Days Left'}
+                                                            {dayLabel}
                                                         </span>
                                                     </div>
 
                                                     {/* Progress Bar */}
-                                                    <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${progress}%` }}
-                                                            transition={{ delay: 0.4 + (idx * 0.1), duration: 1 }}
-                                                            className={`h-full rounded-full ${isPast ? 'bg-gray-400' : 'bg-gradient-to-r from-teal-400 to-cyan-500'}`}
-                                                        />
-                                                    </div>
-                                                    <div className="flex justify-between mt-1.5">
-                                                        <span className="text-[10px] text-gray-400">{event.Startdate}</span>
-                                                        <span className="text-[10px] text-gray-400">{Math.round(progress)}%</span>
-                                                    </div>
+                                                    {showProgressBar && (
+                                                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${progress}%` }}
+                                                                transition={{ delay: 0.4 + (idx * 0.1), duration: 1 }}
+                                                                className={`h-full rounded-full ${isPast ? 'bg-gray-400' : 'bg-gradient-to-r from-teal-400 to-cyan-500'}`}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {showProgressMeta && (
+                                                        <div className={`flex justify-between ${showProgressBar ? 'mt-1.5' : 'mt-2'}`}>
+                                                            <span className="text-[10px] text-gray-400">{progressDate}</span>
+                                                            <span className="text-[10px] text-gray-400">{Math.round(progress)}%</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </motion.div>
                                         );
