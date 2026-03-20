@@ -999,12 +999,210 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
   );
 });
 
+interface MapComponentProps {
+  onSelectDestination: (destination: TravelDestination) => void;
+}
+
+// 真实地图组件 - 使用Leaflet实现
+const MapComponent: React.FC<MapComponentProps> = React.memo(({ onSelectDestination }) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+
+  // 计算地图中心点 - 取所有坐标的平均值，并转换为GCJ-02坐标系
+  const center = useMemo<[number, number]>(() => {
+    if (travelData.length > 0) {
+      const avgLat = travelData.reduce((sum, dest) => sum + dest.coordinates[1], 0) / travelData.length;
+      const avgLng = travelData.reduce((sum, dest) => sum + dest.coordinates[0], 0) / travelData.length;
+      const [gcjLng, gcjLat] = transformCoord(avgLng, avgLat);
+      return [gcjLat, gcjLng]; // 纬度,经度格式
+    }
+
+    // 默认中心点（成都）- 转换为GCJ-02
+    const [gcjLng, gcjLat] = transformCoord(104.07, 30.67);
+    return [gcjLat, gcjLng];
+  }, []);
+
+  useEffect(() => {
+    // 动态导入Leaflet，避免SSR问题
+    if (typeof window !== 'undefined' && mapRef.current && !mapInstanceRef.current) {
+      // 动态导入Leaflet
+      import('leaflet').then((L) => {
+        // 确保mapRef.current不为null（TypeScript类型安全）
+        if (!mapRef.current) return;
+
+        // 添加自定义样式到head
+        const styleElement = document.createElement('style');
+        styleElement.textContent = leafletCustomStyles;
+        styleElement.setAttribute('data-leaflet-custom-style', 'true');
+        document.head.appendChild(styleElement);
+
+        // 初始化地图
+        const map = L.map(mapRef.current, {
+          center: center,
+          zoom: 4,
+          zoomControl: true, // 保留原生缩放控件，但我们会自定义其样式
+          attributionControl: false, // 不显示默认attribution
+        });
+
+        // 添加高德地图图层
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+          subdomains: ["1", "2", "3", "4"],
+          maxZoom: 18,
+        }).addTo(map);
+
+        // 添加自定义版权信息
+        const attributionControl = L.control.attribution({
+          position: 'bottomright',
+          prefix: false
+        });
+        attributionControl.addAttribution('地图数据 &copy; <a href="https://www.amap.com/" target="_blank">高德地图</a>');
+        attributionControl.addTo(map);
+
+        // 修复默认图标问题
+        const defaultIcon = L.icon({
+          iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+        });
+
+        // 自定义Apple风格图标
+        const appleStyleIcon = L.divIcon({
+          className: 'custom-marker-icon',
+          html: `<div style="width: 14px; height: 14px;"></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+          popupAnchor: [0, -10]
+        });
+
+        // 添加自定义全屏控件
+        const FullscreenControl = L.Control.extend({
+          options: {
+            position: 'topleft'
+          },
+
+          onAdd: function () {
+            const container = L.DomUtil.create('div', 'leaflet-fullscreen-control');
+            container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6.75 4.5C6.75 4.08579 6.41421 3.75 6 3.75C5.58579 3.75 5.25 4.08579 5.25 4.5V8.25C5.25 8.66421 5.58579 9 6 9H9.75C10.1642 9 10.5 8.66421 10.5 8.25C10.5 7.83579 10.1642 7.5 9.75 7.5H6.75V4.5Z"></path><path d="M17.25 4.5C17.25 4.08579 17.5858 3.75 18 3.75C18.4142 3.75 18.75 4.08579 18.75 4.5V8.25C18.75 8.66421 18.4142 9 18 9H14.25C13.8358 9 13.5 8.66421 13.5 8.25C13.5 7.83579 13.8358 7.5 14.25 7.5H17.25V4.5Z"></path><path d="M18 14.25C18.4142 14.25 18.75 14.5858 18.75 15V18.75H17.25V15.75H14.25C13.8358 15.75 13.5 15.4142 13.5 15C13.5 14.5858 13.8358 14.25 14.25 14.25H18Z"></path><path d="M9.75 14.25C10.1642 14.25 10.5 14.5858 10.5 15C10.5 15.4142 10.1642 15.75 9.75 15.75H6.75V18.75H5.25V15C5.25 14.5858 5.58579 14.25 6 14.25H9.75Z"></path></svg>';
+
+            L.DomEvent.on(container, 'click', function () {
+              toggleFullScreen(mapRef.current);
+            });
+
+            return container;
+          }
+        });
+
+        // 添加重置视图控件
+        const ResetViewControl = L.Control.extend({
+          options: {
+            position: 'topleft'
+          },
+
+          onAdd: function () {
+            const container = L.DomUtil.create('div', 'leaflet-reset-view-control');
+            container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7.44 4.5 3.75 8.19 3.75 12.75C3.75 17.31 7.44 21 12 21C16.56 21 20.25 17.31 20.25 12.75C20.25 12.3358 20.5858 12 21 12C21.4142 12 21.75 12.3358 21.75 12.75C21.75 18.1383 17.3883 22.5 12 22.5C6.61172 22.5 2.25 18.1383 2.25 12.75C2.25 7.36172 6.61172 3 12 3C12.4142 3 12.75 3.33579 12.75 3.75C12.75 4.16421 12.4142 4.5 12 4.5Z"></path><path d="M16.5 7.5C16.5 6.67157 17.1716 6 18 6C18.8284 6 19.5 6.67157 19.5 7.5C19.5 8.32843 18.8284 9 18 9C17.1716 9 16.5 8.32843 16.5 7.5Z"></path><path d="M12 7.5C12.4142 7.5 12.75 7.83579 12.75 8.25V12.0858L15.3223 14.6581C15.6152 14.951 15.6152 15.4259 15.3223 15.7188C15.0294 16.0116 14.5546 16.0116 14.2617 15.7188L11.4697 12.9268C11.329 12.7861 11.25 12.5987 11.25 12.4032V8.25C11.25 7.83579 11.5858 7.5 12 7.5Z"></path></svg>';
+            container.title = "恢复默认视图";
+
+            L.DomEvent.on(container, 'click', function () {
+              map.setView(center, 4);
+            });
+
+            return container;
+          }
+        });
+
+        map.addControl(new FullscreenControl());
+        map.addControl(new ResetViewControl());
+
+        // 添加标记
+        travelData.forEach((dest) => {
+          // 转换坐标（WGS-84 到 GCJ-02）
+          const [gcjLng, gcjLat] = transformCoord(dest.coordinates[0], dest.coordinates[1]);
+
+          const marker = L.marker([gcjLat, gcjLng], { icon: appleStyleIcon })
+            .addTo(map);
+
+          // 添加弹出信息
+          marker.bindPopup(`
+            <div style="padding: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+              <h3 style="font-weight: 600; font-size: 16px; margin: 0 0 6px 0; color: #0A84FF;">${dest.city}</h3>
+              <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${dest.country}</p>
+              <p style="margin: 0 0 12px 0; color: #888; font-size: 12px; display: flex; align-items: center;">
+                <svg style="width: 14px; height: 14px; margin-right: 4px; color: #0A84FF;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                ${new Date(dest.date).toLocaleDateString('zh-CN')}
+              </p>
+              <div style="margin-top: 5px;">
+                <button 
+                  style="background: #0A84FF; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; font-weight: 500;"
+                  onclick="document.dispatchEvent(new CustomEvent('select-destination', {detail: '${dest.id}'}))">
+                  <svg style="width: 14px; height: 14px; margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                  查看详情
+                </button>
+              </div>
+            </div>
+          `);
+        });
+
+        // 保存地图实例以便清理
+        mapInstanceRef.current = map;
+
+        // 添加事件监听器处理标记点击
+        const handleSelectDestination = (event: CustomEvent) => {
+          const destId = event.detail;
+          const destination = travelData.find(d => d.id === destId);
+          if (destination) {
+            onSelectDestination(destination);
+          }
+        };
+
+        document.addEventListener('select-destination', handleSelectDestination as EventListener);
+
+        // 清理函数
+        return () => {
+          document.removeEventListener('select-destination', handleSelectDestination as EventListener);
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.remove();
+            mapInstanceRef.current = null;
+          }
+          // 移除自定义样式
+          const customStyle = document.querySelector('style[data-leaflet-custom-style]');
+          if (customStyle) {
+            customStyle.remove();
+          }
+        };
+      });
+    }
+  }, [center, onSelectDestination]);
+
+  return (
+    <div className="w-full h-[300px] sm:h-[400px] rounded-xl overflow-hidden backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
+      <div ref={mapRef} id="map" style={{ height: '100%', width: '100%', position: 'relative' }} className="z-0"></div>
+
+      {/* 地图信息覆盖层 */}
+      <div className="absolute top-4 right-4 z-[1000] rounded-lg backdrop-blur-md bg-white/70 dark:bg-gray-900/70 p-2 max-[400px]:p-1.5 sm:p-3 border border-white/30 dark:border-gray-700/30">
+        <div className="flex items-center text-gray-700 dark:text-gray-300">
+          <GlobeEuropeAfricaIcon className="w-4 h-4 max-[400px]:w-3.5 max-[400px]:h-3.5 sm:w-5 sm:h-5 mr-2 text-blue-500" />
+          <span className="text-xs max-[400px]:text-[11px] sm:text-sm">已经探索 <span className="font-semibold text-blue-600 dark:text-blue-400">{travelData.length}</span> 个目的地 · 按日期排序（最新优先）</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 // 主页面组件
   const Travels: React.FC = () => {
     const [selectedDestination, setSelectedDestination] = useState<TravelDestination | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [hoveredDestination, setHoveredDestination] = useState<string | null>(null);
-    const openTimeoutRef = useRef<number | null>(null);
     const { lockScroll, unlockScroll } = useScrollLock();
 
   // 添加遮挡文本的样式
@@ -1029,22 +1227,16 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
   // 缓存目的地选择函数
   const handleSelectDestination = useCallback((destination: TravelDestination) => {
     preloadDestinationImages(destination.id);
-    if (openTimeoutRef.current !== null) {
-      window.clearTimeout(openTimeoutRef.current);
-    }
-    openTimeoutRef.current = window.setTimeout(() => {
-      setSelectedDestination(destination);
-      setIsModalOpen(true);
-      openTimeoutRef.current = null;
-    }, 50);
+    setSelectedDestination(destination);
+    setIsModalOpen(true);
   }, [preloadDestinationImages]);
+
+  const handleSelectDestinationFromMap = useCallback((destination: TravelDestination) => {
+    setSelectedDestination(destination);
+  }, []);
 
   // 缓存关闭模态框函数
     const handleCloseModal = useCallback(() => {
-      if (openTimeoutRef.current !== null) {
-        window.clearTimeout(openTimeoutRef.current);
-        openTimeoutRef.current = null;
-      }
       setIsModalOpen(false);
     }, []);
 
@@ -1059,209 +1251,6 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
         unlockScroll();
       };
     }, [unlockScroll]);
-
-  useEffect(() => {
-    return () => {
-      if (openTimeoutRef.current !== null) {
-        window.clearTimeout(openTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // 真实地图组件 - 使用Leaflet实现
-  const MapComponent = () => {
-    const mapRef = useRef<HTMLDivElement>(null);
-    const mapInstanceRef = useRef<any>(null);
-
-    // 计算地图中心点 - 取所有坐标的平均值，并转换为GCJ-02坐标系
-    const center = useMemo<[number, number]>(() => {
-      if (travelData.length > 0) {
-        const avgLat = travelData.reduce((sum, dest) => sum + dest.coordinates[1], 0) / travelData.length;
-        const avgLng = travelData.reduce((sum, dest) => sum + dest.coordinates[0], 0) / travelData.length;
-        const [gcjLng, gcjLat] = transformCoord(avgLng, avgLat);
-        return [gcjLat, gcjLng]; // 纬度,经度格式
-      }
-
-      // 默认中心点（成都）- 转换为GCJ-02
-      const [gcjLng, gcjLat] = transformCoord(104.07, 30.67);
-      return [gcjLat, gcjLng];
-    }, []);
-
-    useEffect(() => {
-      // 动态导入Leaflet，避免SSR问题
-      if (typeof window !== 'undefined' && mapRef.current && !mapInstanceRef.current) {
-        // 动态导入Leaflet
-        import('leaflet').then((L) => {
-          // 确保mapRef.current不为null（TypeScript类型安全）
-          if (!mapRef.current) return;
-
-          // 添加自定义样式到head
-          const styleElement = document.createElement('style');
-          styleElement.textContent = leafletCustomStyles;
-          styleElement.setAttribute('data-leaflet-custom-style', 'true');
-          document.head.appendChild(styleElement);
-
-          // 初始化地图
-          const map = L.map(mapRef.current, {
-            center: center,
-            zoom: 4,
-            zoomControl: true, // 保留原生缩放控件，但我们会自定义其样式
-            attributionControl: false, // 不显示默认attribution
-          });
-
-          // 添加高德地图图层
-          L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-            subdomains: ["1", "2", "3", "4"],
-            maxZoom: 18,
-          }).addTo(map);
-
-          // 添加自定义版权信息
-          const attributionControl = L.control.attribution({
-            position: 'bottomright',
-            prefix: false
-          });
-          attributionControl.addAttribution('地图数据 &copy; <a href="https://www.amap.com/" target="_blank">高德地图</a>');
-          attributionControl.addTo(map);
-
-          // 修复默认图标问题
-          const defaultIcon = L.icon({
-            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-          });
-
-          // 自定义Apple风格图标
-          const appleStyleIcon = L.divIcon({
-            className: 'custom-marker-icon',
-            html: `<div style="width: 14px; height: 14px;"></div>`,
-            iconSize: [14, 14],
-            iconAnchor: [7, 7],
-            popupAnchor: [0, -10]
-          });
-
-          // 添加自定义全屏控件
-          const FullscreenControl = L.Control.extend({
-            options: {
-              position: 'topleft'
-            },
-
-            onAdd: function () {
-              const container = L.DomUtil.create('div', 'leaflet-fullscreen-control');
-              container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6.75 4.5C6.75 4.08579 6.41421 3.75 6 3.75C5.58579 3.75 5.25 4.08579 5.25 4.5V8.25C5.25 8.66421 5.58579 9 6 9H9.75C10.1642 9 10.5 8.66421 10.5 8.25C10.5 7.83579 10.1642 7.5 9.75 7.5H6.75V4.5Z"></path><path d="M17.25 4.5C17.25 4.08579 17.5858 3.75 18 3.75C18.4142 3.75 18.75 4.08579 18.75 4.5V8.25C18.75 8.66421 18.4142 9 18 9H14.25C13.8358 9 13.5 8.66421 13.5 8.25C13.5 7.83579 13.8358 7.5 14.25 7.5H17.25V4.5Z"></path><path d="M18 14.25C18.4142 14.25 18.75 14.5858 18.75 15V18.75H17.25V15.75H14.25C13.8358 15.75 13.5 15.4142 13.5 15C13.5 14.5858 13.8358 14.25 14.25 14.25H18Z"></path><path d="M9.75 14.25C10.1642 14.25 10.5 14.5858 10.5 15C10.5 15.4142 10.1642 15.75 9.75 15.75H6.75V18.75H5.25V15C5.25 14.5858 5.58579 14.25 6 14.25H9.75Z"></path></svg>';
-
-              L.DomEvent.on(container, 'click', function () {
-                toggleFullScreen(mapRef.current);
-              });
-
-              return container;
-            }
-          });
-
-          // 添加重置视图控件
-          const ResetViewControl = L.Control.extend({
-            options: {
-              position: 'topleft'
-            },
-
-            onAdd: function () {
-              const container = L.DomUtil.create('div', 'leaflet-reset-view-control');
-              container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7.44 4.5 3.75 8.19 3.75 12.75C3.75 17.31 7.44 21 12 21C16.56 21 20.25 17.31 20.25 12.75C20.25 12.3358 20.5858 12 21 12C21.4142 12 21.75 12.3358 21.75 12.75C21.75 18.1383 17.3883 22.5 12 22.5C6.61172 22.5 2.25 18.1383 2.25 12.75C2.25 7.36172 6.61172 3 12 3C12.4142 3 12.75 3.33579 12.75 3.75C12.75 4.16421 12.4142 4.5 12 4.5Z"></path><path d="M16.5 7.5C16.5 6.67157 17.1716 6 18 6C18.8284 6 19.5 6.67157 19.5 7.5C19.5 8.32843 18.8284 9 18 9C17.1716 9 16.5 8.32843 16.5 7.5Z"></path><path d="M12 7.5C12.4142 7.5 12.75 7.83579 12.75 8.25V12.0858L15.3223 14.6581C15.6152 14.951 15.6152 15.4259 15.3223 15.7188C15.0294 16.0116 14.5546 16.0116 14.2617 15.7188L11.4697 12.9268C11.329 12.7861 11.25 12.5987 11.25 12.4032V8.25C11.25 7.83579 11.5858 7.5 12 7.5Z"></path></svg>';
-              container.title = "恢复默认视图";
-
-              L.DomEvent.on(container, 'click', function () {
-                map.setView(center, 4);
-              });
-
-              return container;
-            }
-          });
-
-          map.addControl(new FullscreenControl());
-          map.addControl(new ResetViewControl());
-
-          // 添加标记
-          travelData.forEach((dest) => {
-            // 转换坐标（WGS-84 到 GCJ-02）
-            const [gcjLng, gcjLat] = transformCoord(dest.coordinates[0], dest.coordinates[1]);
-
-            const marker = L.marker([gcjLat, gcjLng], { icon: appleStyleIcon })
-              .addTo(map);
-
-            // 添加弹出信息
-            marker.bindPopup(`
-              <div style="padding: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                <h3 style="font-weight: 600; font-size: 16px; margin: 0 0 6px 0; color: #0A84FF;">${dest.city}</h3>
-                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${dest.country}</p>
-                <p style="margin: 0 0 12px 0; color: #888; font-size: 12px; display: flex; align-items: center;">
-                  <svg style="width: 14px; height: 14px; margin-right: 4px; color: #0A84FF;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  ${new Date(dest.date).toLocaleDateString('zh-CN')}
-                </p>
-                <div style="margin-top: 5px;">
-                  <button 
-                    style="background: #0A84FF; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; font-weight: 500;"
-                    onclick="document.dispatchEvent(new CustomEvent('select-destination', {detail: '${dest.id}'}))">
-                    <svg style="width: 14px; height: 14px; margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                    查看详情
-                  </button>
-                </div>
-              </div>
-            `);
-          });
-
-          // 保存地图实例以便清理
-          mapInstanceRef.current = map;
-
-          // 添加事件监听器处理标记点击
-          const handleSelectDestination = (event: CustomEvent) => {
-            const destId = event.detail;
-            const destination = travelData.find(d => d.id === destId);
-            if (destination) {
-              setSelectedDestination(destination);
-            }
-          };
-
-          document.addEventListener('select-destination', handleSelectDestination as EventListener);
-
-          // 清理函数
-          return () => {
-            document.removeEventListener('select-destination', handleSelectDestination as EventListener);
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.remove();
-              mapInstanceRef.current = null;
-            }
-            // 移除自定义样式
-            const customStyle = document.querySelector('style[data-leaflet-custom-style]');
-            if (customStyle) {
-              customStyle.remove();
-            }
-          };
-        });
-      }
-    }, []);
-
-    return (
-      <div className="w-full h-[300px] sm:h-[400px] rounded-xl overflow-hidden backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
-        <div ref={mapRef} id="map" style={{ height: '100%', width: '100%', position: 'relative' }} className="z-0"></div>
-
-        {/* 地图信息覆盖层 */}
-        <div className="absolute top-4 right-4 z-[1000] rounded-lg backdrop-blur-md bg-white/70 dark:bg-gray-900/70 p-2 max-[400px]:p-1.5 sm:p-3 border border-white/30 dark:border-gray-700/30">
-          <div className="flex items-center text-gray-700 dark:text-gray-300">
-            <GlobeEuropeAfricaIcon className="w-4 h-4 max-[400px]:w-3.5 max-[400px]:h-3.5 sm:w-5 sm:h-5 mr-2 text-blue-500" />
-            <span className="text-xs max-[400px]:text-[11px] sm:text-sm">已经探索 <span className="font-semibold text-blue-600 dark:text-blue-400">{travelData.length}</span> 个目的地 · 按日期排序（最新优先）</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const SectionTitle = ({ icon, title }: { icon: React.ReactNode, title: string }) => (
     <div className="flex items-center gap-3 mb-6">
@@ -1296,7 +1285,7 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
           icon={<GlobeEuropeAfricaIcon className="w-5 h-5 text-[#007AFF]" />}
           title="旅行地图"
         />
-        <MapComponent />
+        <MapComponent onSelectDestination={handleSelectDestinationFromMap} />
       </motion.section>
 
       {/* 目的地列表 */}
