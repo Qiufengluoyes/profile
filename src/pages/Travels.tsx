@@ -1185,7 +1185,12 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({ onSelectDestinat
 
   return (
     <div className="w-full h-[300px] sm:h-[400px] rounded-xl overflow-hidden backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
-      <div ref={mapRef} id="map" style={{ height: '100%', width: '100%', position: 'relative' }} className="z-0"></div>
+      <div
+        ref={mapRef}
+        id="map"
+        style={{ height: '100%', width: '100%', position: 'relative', willChange: 'filter' }}
+        className="z-0 transition-[filter] duration-500 ease-out dark:brightness-[0.78] dark:saturate-[0.85] dark:contrast-[1.1]"
+      ></div>
 
       {/* 地图信息覆盖层 */}
       <div className="absolute top-4 right-4 z-[1000] rounded-lg backdrop-blur-md bg-white/70 dark:bg-gray-900/70 p-2 max-[400px]:p-1.5 sm:p-3 border border-white/30 dark:border-gray-700/30">
