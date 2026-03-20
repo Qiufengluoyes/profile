@@ -1253,10 +1253,10 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
         <div ref={mapRef} id="map" style={{ height: '100%', width: '100%', position: 'relative' }} className="z-0"></div>
 
         {/* 地图信息覆盖层 */}
-        <div className="absolute top-4 right-4 z-[1000] rounded-lg backdrop-blur-md bg-white/70 dark:bg-gray-900/70 p-3 border border-white/30 dark:border-gray-700/30">
+        <div className="absolute top-4 right-4 z-[1000] rounded-lg backdrop-blur-md bg-white/70 dark:bg-gray-900/70 p-2 max-[400px]:p-1.5 sm:p-3 border border-white/30 dark:border-gray-700/30">
           <div className="flex items-center text-gray-700 dark:text-gray-300">
-            <GlobeEuropeAfricaIcon className="w-5 h-5 mr-2 text-blue-500" />
-            <span className="text-sm">已经探索 <span className="font-semibold text-blue-600 dark:text-blue-400">{travelData.length}</span> 个目的地 · 按日期排序（最新优先）</span>
+            <GlobeEuropeAfricaIcon className="w-4 h-4 max-[400px]:w-3.5 max-[400px]:h-3.5 sm:w-5 sm:h-5 mr-2 text-blue-500" />
+            <span className="text-xs max-[400px]:text-[11px] sm:text-sm">已经探索 <span className="font-semibold text-blue-600 dark:text-blue-400">{travelData.length}</span> 个目的地 · 按日期排序（最新优先）</span>
           </div>
         </div>
       </div>
