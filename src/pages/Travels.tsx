@@ -1377,7 +1377,7 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
                   {/* 查看详情按钮 */}
                   <button
                     onClick={() => handleSelectDestination(destination)}
-                    className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[var(--glass-bg)] px-4 py-2.5 text-sm font-semibold text-[#2463EB] transition-all duration-200 active:scale-[0.98] dark:bg-[#1C4ED8] dark:text-white"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[var(--glass-bg)] px-4 py-2.5 text-sm font-semibold text-[#2463EB] transition-all duration-200 dark:bg-[#1C4ED8] dark:text-white"
                   >
                     查看更多详情
                     <ChevronRightIcon className="w-4 h-4 ml-1" />
