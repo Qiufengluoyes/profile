@@ -109,6 +109,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         }
     };
 
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const titleLayoutId = layoutId ? `${layoutId}-title` : undefined;
+    const subtitleLayoutId = layoutId ? `${layoutId}-subtitle` : undefined;
+
     return (
         <motion.div
             layoutId={layoutId}
@@ -138,20 +142,20 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                     <div className="flex items-center justify-between mb-4 flex-shrink-0">
                         <div className="flex items-center">
                             <motion.div
-                                layoutId={`${layoutId}-icon-box`}
+                                layoutId={iconBoxLayoutId}
                                 className="w-10 h-10 rounded-xl bg-white/50 dark:bg-white/10 flex items-center justify-center shadow-sm backdrop-blur-md"
                             >
                                 <SparklesIcon className="w-6 h-6 text-[#007aff] dark:text-blue-400" />
                             </motion.div>
                             <div className="ml-3">
                                 <motion.h3
-                                    layoutId={`${layoutId}-title`}
+                                    layoutId={titleLayoutId}
                                     className="text-[20px] font-bold text-[#1d1d1f] dark:text-white leading-none"
                                 >
                                     时间线 & 动态
                                 </motion.h3>
                                 <motion.p
-                                    layoutId={`${layoutId}-subtitle`}
+                                    layoutId={subtitleLayoutId}
                                     className="text-[13px] text-[#1d1d1f]/60 dark:text-white/60 font-medium mt-1"
                                 >
                                     Timeline & Updates

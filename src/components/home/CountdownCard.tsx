@@ -159,6 +159,9 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
         ? 'text-sm'
         : (ongoingCount === 2 ? 'text-base' : 'text-lg');
 
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const iconLayoutId = layoutId ? `${layoutId}-icon` : undefined;
+
     return (
         <motion.div
             layoutId={layoutId}
@@ -184,10 +187,10 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
                 {/* Header */}
                 <div className="flex justify-between items-start">
                     <motion.div
-                        layoutId={`${layoutId}-icon-box`}
+                        layoutId={iconBoxLayoutId}
                         className="w-10 h-10 rounded-full bg-teal-500/10 dark:bg-teal-400/10 flex items-center justify-center backdrop-blur-md"
                     >
-                        <motion.div layoutId={`${layoutId}-icon`}>
+                        <motion.div layoutId={iconLayoutId}>
                             <ClockIcon className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                         </motion.div>
                     </motion.div>

@@ -26,6 +26,10 @@ const DevicesModal: React.FC<DevicesModalProps> = ({
     layoutId
 }) => {
     const { lockScroll, unlockScroll } = useScrollLock();
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const iconLayoutId = layoutId ? `${layoutId}-icon` : undefined;
+    const titleLayoutId = layoutId ? `${layoutId}-title` : undefined;
+    const subtitleLayoutId = layoutId ? `${layoutId}-subtitle` : undefined;
 
     useEffect(() => {
         if (isOpen) {
@@ -103,21 +107,21 @@ const DevicesModal: React.FC<DevicesModalProps> = ({
                                 <div className="flex-1 p-6 flex flex-col">
                                     <div className="mb-8">
                                         <motion.div
-                                            layoutId={`${layoutId}-icon-box`}
+                                            layoutId={iconBoxLayoutId}
                                             className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white shadow-lg mb-4"
                                         >
-                                            <motion.div layoutId={`${layoutId}-icon`}>
+                                            <motion.div layoutId={iconLayoutId}>
                                                 <ComputerDesktopIcon className="w-8 h-8" />
                                             </motion.div>
                                         </motion.div>
                                         <motion.h2
-                                            layoutId={`${layoutId}-title`}
+                                            layoutId={titleLayoutId}
                                             className="text-2xl leading-none font-bold text-[#1d1d1f] dark:text-white mb-1"
                                         >
                                             我的设备
                                         </motion.h2>
                                         <motion.p
-                                            layoutId={`${layoutId}-subtitle`}
+                                            layoutId={subtitleLayoutId}
                                             className="text-[#86868b] dark:text-gray-400 text-sm"
                                         >
                                             Digital Arsenal

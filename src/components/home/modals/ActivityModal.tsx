@@ -70,6 +70,9 @@ const ActivityModal: React.FC<ActivityModalProps> = ({
         }
     };
 
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const titleLayoutId = layoutId ? `${layoutId}-title` : undefined;
+    const subtitleLayoutId = layoutId ? `${layoutId}-subtitle` : undefined;
 
     return (
         <AnimatePresence onExitComplete={unlockScroll}>
@@ -129,19 +132,19 @@ const ActivityModal: React.FC<ActivityModalProps> = ({
                                 <div className="flex-1 p-6 flex flex-col">
                                     <div className="mb-8">
                                         <motion.div
-                                            layoutId={`${layoutId}-icon-box`}
+                                            layoutId={iconBoxLayoutId}
                                             className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg mb-4"
                                         >
                                             <SparklesIcon className="w-8 h-8" />
                                         </motion.div>
                                         <motion.h2
-                                            layoutId={`${layoutId}-title`}
+                                            layoutId={titleLayoutId}
                                             className="text-2xl font-bold text-[#1d1d1f] dark:text-white mb-1"
                                         >
                                             时间线 & 动态
                                         </motion.h2>
                                         <motion.p
-                                            layoutId={`${layoutId}-subtitle`}
+                                            layoutId={subtitleLayoutId}
                                             className="text-[#86868b] dark:text-gray-400 text-sm"
                                         >
                                             Timeline & Updates

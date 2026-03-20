@@ -31,6 +31,9 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
         return () => { if (!isOpen) unlockScroll(); };
     }, [isOpen, lockScroll, unlockScroll]);
 
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const iconLayoutId = layoutId ? `${layoutId}-icon` : undefined;
+
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
     const normalizeToMinute = (value: Date) => {
@@ -142,10 +145,10 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                 <div className="flex-1 p-6 flex flex-col">
                                     <div className="mb-8">
                                         <motion.div
-                                            layoutId={`${layoutId}-icon-box`}
+                                            layoutId={iconBoxLayoutId}
                                             className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white shadow-lg mb-4"
                                         >
-                                            <motion.div layoutId={`${layoutId}-icon`}>
+                                            <motion.div layoutId={iconLayoutId}>
                                                 <ClockIcon className="w-8 h-8" />
                                             </motion.div>
                                         </motion.div>

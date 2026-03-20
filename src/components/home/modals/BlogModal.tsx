@@ -25,6 +25,9 @@ const BlogModal: React.FC<BlogModalProps> = ({
     layoutId
 }) => {
     const { lockScroll, unlockScroll } = useScrollLock();
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const titleLayoutId = layoutId ? `${layoutId}-title` : undefined;
+    const subtitleLayoutId = layoutId ? `${layoutId}-subtitle` : undefined;
 
     // Lock body scroll when modal is open
     useEffect(() => {
@@ -89,20 +92,20 @@ const BlogModal: React.FC<BlogModalProps> = ({
                                     <div className="mb-6 flex-shrink-0">
                                         {/* Icon Box */}
                                         <motion.div
-                                            layoutId={`${layoutId}-icon-box`}
+                                            layoutId={iconBoxLayoutId}
                                             className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/20 mb-4"
                                         >
                                             <DocumentTextIcon className="w-8 h-8" />
                                         </motion.div>
 
                                         <motion.h2
-                                            layoutId={`${layoutId}-title`}
+                                            layoutId={titleLayoutId}
                                             className="text-2xl font-bold text-[#1d1d1f] dark:text-white mb-1"
                                         >
                                             My Blog
                                         </motion.h2>
                                         <motion.p
-                                            layoutId={`${layoutId}-subtitle`}
+                                            layoutId={subtitleLayoutId}
                                             className="text-[#86868b] dark:text-gray-400 text-xs uppercase tracking-wider font-medium"
                                         >
                                             Updates & Tutorials

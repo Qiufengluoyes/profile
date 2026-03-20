@@ -29,6 +29,9 @@ const BlogCard: React.FC<BlogCardProps> = ({
     const featured = posts[0];
     const topRight = posts[1];
     const bottomRight = posts.slice(2, 4);
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const titleLayoutId = layoutId ? `${layoutId}-title` : undefined;
+    const subtitleLayoutId = layoutId ? `${layoutId}-subtitle` : undefined;
 
     return (
         <motion.div
@@ -53,20 +56,20 @@ const BlogCard: React.FC<BlogCardProps> = ({
                 {/* Header — full width */}
                 <div className="flex items-center gap-2.5 shrink-0">
                     <motion.div
-                        layoutId={`${layoutId}-icon-box`}
+                        layoutId={iconBoxLayoutId}
                         className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/20 shrink-0"
                     >
                         <DocumentTextIcon className="w-[18px] h-[18px]" />
                     </motion.div>
                     <div>
                         <motion.h3
-                            layoutId={`${layoutId}-title`}
+                            layoutId={titleLayoutId}
                             className="text-base font-bold text-[#1d1d1f] dark:text-white leading-none"
                         >
                             My Blog
                         </motion.h3>
                         <motion.p
-                            layoutId={`${layoutId}-subtitle`}
+                            layoutId={subtitleLayoutId}
                             className="text-[10px] text-[#1d1d1f]/50 dark:text-white/50 font-medium uppercase tracking-wider mt-0.5"
                         >
                             Updates & Tutorials

@@ -1,7 +1,7 @@
 // @ts-ignore - 暂时忽略LaptopIcon未导出错误
 // @ts-ignore - 暂时忽略找不到../components/Icons错误
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import {
   WrenchScrewdriverIcon,
   DocumentTextIcon,
@@ -40,6 +40,16 @@ const ProfileModal = lazy(() => import('../components/home/modals/ProfileModal')
 const DevicesModal = lazy(() => import('../components/home/modals/DevicesModal'));
 import CountdownCard from '../components/home/CountdownCard';
 const CountdownModal = lazy(() => import('../components/home/modals/CountdownModal'));
+
+const layoutIds = {
+  personal: 'profile-card',
+  skills: 'activity-card',
+  devices: 'devices-card',
+  countdown: 'countdown-card',
+  blogs: 'blog-card'
+} as const;
+type ModalKey = keyof typeof layoutIds;
+const MORPH_WINDOW_MS = 420;
 
 // 定义博客文章接口
 // 定义API错误接口
@@ -368,6 +378,36 @@ const Home = () => {
     blogs: false
   });
   const [closingModals, setClosingModals] = useState<Record<string, boolean>>({});
+  const [sharedLayout, setSharedLayout] = useState<Record<ModalKey, boolean>>(() => ({
+    personal: true,
+    skills: true,
+    devices: true,
+    countdown: true,
+    blogs: true
+  }));
+  const modalOpenRef = useRef(modalOpen);
+  const sharedLayoutTimers = useRef<Record<ModalKey, number | null>>({
+    personal: null,
+    skills: null,
+    devices: null,
+    countdown: null,
+    blogs: null
+  });
+
+  useEffect(() => {
+    modalOpenRef.current = modalOpen;
+  }, [modalOpen]);
+
+  useEffect(() => {
+    return () => {
+      (Object.keys(sharedLayoutTimers.current) as ModalKey[]).forEach((key) => {
+        const timer = sharedLayoutTimers.current[key];
+        if (timer) {
+          window.clearTimeout(timer);
+        }
+      });
+    };
+  }, []);
 
   // 存储从API获取的博客文章
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -395,11 +435,36 @@ const Home = () => {
     }, 50);
   };
 
-  const openModal = (modal: string) => {
-    setModalOpen({ ...modalOpen, [modal]: true });
+  const getCardLayoutId = (key: ModalKey) =>
+    enableMorph && sharedLayout[key] ? layoutIds[key] : undefined;
+  const getModalLayoutId = (key: ModalKey) =>
+    enableMorph ? layoutIds[key] : undefined;
+
+  const scheduleDisableSharedLayout = (key: ModalKey) => {
+    const existingTimer = sharedLayoutTimers.current[key];
+    if (existingTimer) {
+      window.clearTimeout(existingTimer);
+    }
+    sharedLayoutTimers.current[key] = window.setTimeout(() => {
+      if (modalOpenRef.current[key]) {
+        setSharedLayout(prev => ({ ...prev, [key]: false }));
+      }
+    }, MORPH_WINDOW_MS);
   };
 
-  const closeModal = (modal: string) => {
+  const openModal = (modal: ModalKey) => {
+    setSharedLayout(prev => ({ ...prev, [modal]: true }));
+    setModalOpen(prev => ({ ...prev, [modal]: true }));
+    scheduleDisableSharedLayout(modal);
+  };
+
+  const closeModal = (modal: ModalKey) => {
+    const existingTimer = sharedLayoutTimers.current[modal];
+    if (existingTimer) {
+      window.clearTimeout(existingTimer);
+      sharedLayoutTimers.current[modal] = null;
+    }
+    setSharedLayout(prev => ({ ...prev, [modal]: true }));
     setModalOpen(prev => ({ ...prev, [modal]: false }));
     setClosingModals(prev => ({ ...prev, [modal]: true }));
     setTimeout(() => {
@@ -639,7 +704,7 @@ const Home = () => {
           onClick={() => openModal('personal')}
           hidden={modalOpen.personal}
           closing={!!closingModals.personal}
-          layoutId={enableMorph ? 'profile-card' : undefined}
+          layoutId={getCardLayoutId('personal')}
         />
 
         {/* Activity Card (Replaces Skills & Learning) */}
@@ -656,7 +721,7 @@ const Home = () => {
           custom={1}
           hidden={modalOpen.skills}
           closing={!!closingModals.skills}
-          layoutId={enableMorph ? 'activity-card' : undefined}
+          layoutId={getCardLayoutId('skills')}
         />
 
 
@@ -666,7 +731,7 @@ const Home = () => {
           onClick={() => openModal('devices')}
           onMouseEnter={() => handleMouseEnter('devices')}
           onMouseLeave={() => handleMouseLeave('devices')}
-          layoutId={enableMorph ? 'devices-card' : undefined}
+          layoutId={getCardLayoutId('devices')}
           hidden={modalOpen.devices}
           closing={!!closingModals.devices}
         />
@@ -677,7 +742,7 @@ const Home = () => {
           onClick={() => openModal('countdown')}
           onMouseEnter={() => handleMouseEnter('countdown')}
           onMouseLeave={() => handleMouseLeave('countdown')}
-          layoutId={enableMorph ? 'countdown-card' : undefined}
+          layoutId={getCardLayoutId('countdown')}
           hidden={modalOpen.countdown}
           closing={!!closingModals.countdown}
         />
@@ -691,7 +756,7 @@ const Home = () => {
           onMouseLeave={() => handleMouseLeave('blogs')}
           hidden={modalOpen.blogs}
           closing={!!closingModals.blogs}
-          layoutId={enableMorph ? 'blog-card' : undefined}
+          layoutId={getCardLayoutId('blogs')}
         />
       </div>
 
@@ -702,7 +767,7 @@ const Home = () => {
           isOpen={modalOpen.skills}
           onClose={() => closeModal('skills')}
           timelineEvents={myData.timelineEvents}
-          layoutId={enableMorph ? 'activity-card' : undefined}
+          layoutId={getModalLayoutId('skills')}
         />
       </Suspense>
 
@@ -711,7 +776,7 @@ const Home = () => {
         <ProfileModal
           isOpen={modalOpen.personal}
           onClose={() => closeModal('personal')}
-          layoutId={enableMorph ? 'profile-card' : undefined}
+          layoutId={getModalLayoutId('personal')}
         />
       </Suspense>
 
@@ -721,7 +786,7 @@ const Home = () => {
           isOpen={modalOpen.devices}
           onClose={() => closeModal('devices')}
           devices={devices}
-          layoutId={enableMorph ? 'devices-card' : undefined}
+          layoutId={getModalLayoutId('devices')}
         />
       </Suspense>
 
@@ -731,7 +796,7 @@ const Home = () => {
           isOpen={modalOpen.countdown}
           onClose={() => closeModal('countdown')}
           events={countdownData}
-          layoutId={enableMorph ? 'countdown-card' : undefined}
+          layoutId={getModalLayoutId('countdown')}
         />
       </Suspense>
 
@@ -741,7 +806,7 @@ const Home = () => {
           isOpen={modalOpen.blogs}
           onClose={() => closeModal('blogs')}
           blogPosts={blogPosts}
-          layoutId={enableMorph ? 'blog-card' : undefined}
+          layoutId={getModalLayoutId('blogs')}
         />
       </Suspense>
 

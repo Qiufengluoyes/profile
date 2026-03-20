@@ -51,6 +51,11 @@ const DevicesCard: React.FC<DevicesCardProps> = ({
         return <CpuChipIcon className="w-5 h-5" />;
     };
 
+    const iconBoxLayoutId = layoutId ? `${layoutId}-icon-box` : undefined;
+    const iconLayoutId = layoutId ? `${layoutId}-icon` : undefined;
+    const titleLayoutId = layoutId ? `${layoutId}-title` : undefined;
+    const subtitleLayoutId = layoutId ? `${layoutId}-subtitle` : undefined;
+
     return (
         <motion.div
             layoutId={layoutId}
@@ -77,24 +82,24 @@ const DevicesCard: React.FC<DevicesCardProps> = ({
                 <div className="md:w-[35%] flex flex-col justify-between">
                     <div>
                         <motion.div
-                            layoutId={`${layoutId}-icon-box`}
+                            layoutId={iconBoxLayoutId}
                             className="w-12 h-12 rounded-xl bg-orange-500/10 dark:bg-orange-400/10 flex items-center justify-center shadow-sm backdrop-blur-md mb-4 border border-orange-500/20"
                         >
-                            <motion.div layoutId={`${layoutId}-icon`}>
+                            <motion.div layoutId={iconLayoutId}>
                                 <ComputerDesktopIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                             </motion.div>
                         </motion.div>
 
                         <div className='mb-1'>
                             <motion.h3
-                                layoutId={`${layoutId}-title`}
+                                layoutId={titleLayoutId}
                                 className="text-2xl font-bold text-[#1d1d1f] dark:text-white leading-none"
                             >
                                 我的设备
                             </motion.h3>
                         </div>
                         <motion.p
-                            layoutId={`${layoutId}-subtitle`}
+                            layoutId={subtitleLayoutId}
                             className="text-xs text-[#1d1d1f]/60 dark:text-white/60 font-medium uppercase tracking-wider"
                         >
                             Digital Arsenal
