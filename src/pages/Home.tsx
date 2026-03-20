@@ -222,11 +222,32 @@ interface CountdownItem {
   top: boolean;
 }
 
+const parseCountdownDate = (value: string): Date | null => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  let match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?$/);
+  if (match) {
+    const [, yy, mm, dd, hh = '0', min = '0'] = match;
+    return new Date(Number(yy), Number(mm) - 1, Number(dd), Number(hh), Number(min), 0, 0);
+  }
+  match = trimmed.match(/^(\d{4})-(\d{2})$/) || trimmed.match(/^(\d{4})-(\d{2})-$/);
+  if (match) {
+    const [, yy, mm] = match;
+    return new Date(Number(yy), Number(mm) - 1, 1, 0, 0, 0, 0);
+  }
+  const isoTrimmed = trimmed.replace(' ', 'T');
+  const parsed = new Date(isoTrimmed);
+  if (Number.isNaN(parsed.getTime())) return null;
+  parsed.setSeconds(0, 0);
+  return parsed;
+};
+
 // 计算剩余天数的函数
 const calculateDaysLeft = (targetDate: string): number => {
   if (!targetDate) return 0;
 
-  const target = new Date(targetDate);
+  const target = parseCountdownDate(targetDate);
+  if (!target) return 0;
   const today = new Date();
   const timeDiff = target.getTime() - today.getTime();
   const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -237,8 +258,9 @@ const calculateDaysLeft = (targetDate: string): number => {
 const calculateTotalDays = (startDate: string, targetDate: string): number => {
   if (!startDate || !targetDate) return 0;
 
-  const start = new Date(startDate);
-  const target = new Date(targetDate);
+  const start = parseCountdownDate(startDate);
+  const target = parseCountdownDate(targetDate);
+  if (!start || !target) return 0;
   const timeDiff = target.getTime() - start.getTime();
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
@@ -247,7 +269,8 @@ const calculateTotalDays = (startDate: string, targetDate: string): number => {
 const calculatePassedDays = (startDate: string): number => {
   if (!startDate) return 0;
 
-  const start = new Date(startDate);
+  const start = parseCountdownDate(startDate);
+  if (!start) return 0;
   const today = new Date();
   const timeDiff = today.getTime() - start.getTime();
   const passedDays = Math.ceil(timeDiff / (1000 * 3600 * 24));

@@ -33,28 +33,40 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
 
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-    const toMidnight = (value: Date) => {
+    const normalizeToMinute = (value: Date) => {
         const next = new Date(value);
-        next.setHours(0, 0, 0, 0);
+        next.setSeconds(0, 0);
         return next;
-    };
-
-    const normalizeDateString = (value: string) => {
-        const trimmed = value.trim();
-        if (/^\d{4}-\d{2}$/.test(trimmed)) return `${trimmed}-01`;
-        if (/^\d{4}-\d{2}-$/.test(trimmed)) return `${trimmed}01`;
-        return trimmed;
     };
 
     const parseDate = (value?: string) => {
         if (!value) return null;
-        const normalized = normalizeDateString(value);
-        const parsed = new Date(normalized);
+        const trimmed = value.trim();
+        let match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?$/);
+        if (match) {
+            const [, yy, mm, dd, hh = '0', min = '0'] = match;
+            const parsed = new Date(
+                Number(yy),
+                Number(mm) - 1,
+                Number(dd),
+                Number(hh),
+                Number(min)
+            );
+            return normalizeToMinute(parsed);
+        }
+        match = trimmed.match(/^(\d{4})-(\d{2})$/) || trimmed.match(/^(\d{4})-(\d{2})-$/);
+        if (match) {
+            const [, yy, mm] = match;
+            const parsed = new Date(Number(yy), Number(mm) - 1, 1, 0, 0);
+            return normalizeToMinute(parsed);
+        }
+        const isoTrimmed = trimmed.replace(' ', 'T');
+        const parsed = new Date(isoTrimmed);
         if (Number.isNaN(parsed.getTime())) return null;
-        return toMidnight(parsed);
+        return normalizeToMinute(parsed);
     };
 
-    const todayMid = toMidnight(new Date());
+    const todayMid = normalizeToMinute(new Date());
     const todayTime = todayMid.getTime();
 
     const upcomingTitle = (() => {
@@ -138,10 +150,10 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                             </motion.div>
                                         </motion.div>
                                         <h2 className="text-2xl font-bold text-[#1d1d1f] dark:text-white mb-1">
-                                            倒数日
+                                            日程
                                         </h2>
                                         <p className="text-[#86868b] dark:text-gray-400 text-sm">
-                                            Time Flies
+                                            Schedules
                                         </p>
                                     </div>
 
@@ -192,15 +204,13 @@ const CountdownModal: React.FC<CountdownModalProps> = ({
                                         const isPast = isAfterTarget;
                                         const dayLabel = isPast ? 'Days Ago' : (isInProgress ? 'Days Left' : 'Days');
                                         const showProgressBar = isInProgress;
-                                        const showProgressMeta = !isBeforeStart;
+                                        const showProgressMeta = true;
                                         const flagDate = isPast
                                             ? (event.Startdate || event.targetDate)
                                             : (isInProgress
                                                 ? (event.Startdate || event.targetDate)
                                                 : (isBeforeStart ? (event.Startdate || event.targetDate) : event.targetDate));
-                                        const progressDate = isPast
-                                            ? event.targetDate
-                                            : (isInProgress ? event.targetDate : event.Startdate);
+                                        const progressDate = event.targetDate;
 
                                         return (
                                             <motion.div

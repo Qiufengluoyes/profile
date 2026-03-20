@@ -32,35 +32,49 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
     const { tiltStyle, onPointerDown, onPointerUp, onPointerLeave } = useTiltPress();
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-    const toMidnight = (value: Date) => {
+    const normalizeToMinute = (value: Date) => {
         const next = new Date(value);
-        next.setHours(0, 0, 0, 0);
+        next.setSeconds(0, 0);
         return next;
-    };
-
-    const normalizeDateString = (value: string) => {
-        const trimmed = value.trim();
-        if (/^\d{4}-\d{2}$/.test(trimmed)) return `${trimmed}-01`;
-        if (/^\d{4}-\d{2}-$/.test(trimmed)) return `${trimmed}01`;
-        return trimmed;
     };
 
     const parseDate = (value?: string) => {
         if (!value) return null;
-        const normalized = normalizeDateString(value);
-        const parsed = new Date(normalized);
+        const trimmed = value.trim();
+        let match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?$/);
+        if (match) {
+            const [, yy, mm, dd, hh = '0', min = '0'] = match;
+            const parsed = new Date(
+                Number(yy),
+                Number(mm) - 1,
+                Number(dd),
+                Number(hh),
+                Number(min)
+            );
+            return normalizeToMinute(parsed);
+        }
+        match = trimmed.match(/^(\d{4})-(\d{2})$/) || trimmed.match(/^(\d{4})-(\d{2})-$/);
+        if (match) {
+            const [, yy, mm] = match;
+            const parsed = new Date(Number(yy), Number(mm) - 1, 1, 0, 0);
+            return normalizeToMinute(parsed);
+        }
+        const isoTrimmed = trimmed.replace(' ', 'T');
+        const parsed = new Date(isoTrimmed);
         if (Number.isNaN(parsed.getTime())) return null;
-        return toMidnight(parsed);
+        return normalizeToMinute(parsed);
     };
 
     const formatLocalDate = (value: Date) => {
         const y = value.getFullYear();
         const m = String(value.getMonth() + 1).padStart(2, '0');
         const d = String(value.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
+        const hh = String(value.getHours()).padStart(2, '0');
+        const min = String(value.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${d} ${hh}:${min}`;
     };
 
-    const today = toMidnight(new Date());
+    const today = normalizeToMinute(new Date());
     const todayTime = today.getTime();
 
     const pickEvent = () => {
@@ -76,25 +90,46 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
             };
         }).filter(item => item.targetTime !== null);
 
+        const ongoing = withTarget.filter(item => {
+            const startTime = item.start ? item.start.getTime() : null;
+            const targetTime = item.targetTime as number;
+            return startTime !== null && startTime <= todayTime && targetTime >= todayTime;
+        });
+
+        const planned = withTarget.filter(item => {
+            const startTime = item.start ? item.start.getTime() : null;
+            return startTime !== null && startTime > todayTime;
+        });
+
+        if (ongoing.length > 0) {
+            ongoing.sort((a, b) => (a.targetTime as number) - (b.targetTime as number));
+            planned.sort((a, b) => (a.start?.getTime() || 0) - (b.start?.getTime() || 0));
+            return { focus: ongoing[0], ongoing, planned };
+        }
+
         const upcoming = withTarget.filter(item => (item.targetTime as number) >= todayTime);
         if (upcoming.length === 0) return null;
 
         upcoming.sort((a, b) => (a.targetTime as number) - (b.targetTime as number));
-        return upcoming[0];
+        return { focus: upcoming[0], ongoing: [], planned };
     };
 
     const picked = pickEvent();
-    const topEvent = picked?.event;
-    const startDate = picked?.start ?? null;
-    const targetDate = picked?.target ?? null;
+    const focusEvent = picked?.focus;
+    const topEvent = focusEvent?.event;
+    const startDate = focusEvent?.start ?? null;
+    const targetDate = focusEvent?.target ?? null;
     const hasSchedule = !!topEvent;
+    const ongoingEvents = picked?.ongoing ?? [];
+    const ongoingCount = ongoingEvents.length;
+    const plannedEvents = picked?.planned ?? [];
 
     const startTime = (startDate ?? today).getTime();
     const targetTime = (targetDate ?? today).getTime();
 
     const isBeforeStart = !!startDate && todayTime < startTime;
     const isAfterTarget = !!targetDate && todayTime > targetTime;
-    const isInProgress = hasSchedule && !isBeforeStart && !isAfterTarget;
+    const isInProgress = ongoingCount > 0 || (hasSchedule && !isBeforeStart && !isAfterTarget);
 
     const daysToStart = Math.ceil((startTime - todayTime) / MS_PER_DAY);
     const daysToTarget = Math.ceil((targetTime - todayTime) / MS_PER_DAY);
@@ -119,6 +154,10 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
     const displayDate = hasSchedule
         ? (isBeforeStart ? (topEvent?.Startdate || topEvent?.targetDate) : topEvent?.targetDate)
         : formatLocalDate(today);
+
+    const inProgressLabelClass = ongoingCount >= 3
+        ? 'text-sm'
+        : (ongoingCount === 2 ? 'text-base' : 'text-lg');
 
     return (
         <motion.div
@@ -166,12 +205,33 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
                         </div>
                     ) : (
                         <>
-                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            <span className={`${inProgressLabelClass} font-bold text-gray-500 dark:text-gray-400 mb-1`}>
                                 {isInProgress ? '正在进行' : headerText}
                             </span>
                             {isInProgress ? (
-                                <div className="text-4xl font-bold text-[#1d1d1f] dark:text-white tracking-tight text-center line-clamp-2">
-                                    {topEvent?.title}
+                                <div className="text-center space-y-2">
+                                    <div className="text-[26px] font-bold text-[#1d1d1f] dark:text-white tracking-tight space-y-1">
+                                        {(ongoingCount > 0 ? ongoingEvents : [{ event: topEvent }]).map((item, idx) => (
+                                            <div key={`${item.event?.title ?? 'event'}-${idx}`} className="line-clamp-1">
+                                                {item.event?.title}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {plannedEvents.length > 0 && (
+                                        <div className="text-gray-500 dark:text-gray-400 font-medium space-y-0.5">
+                                            <div className={`${inProgressLabelClass} font-bold tracking-wide`}>规划中</div>
+                                            {plannedEvents.slice(0, 3).map((item, idx) => (
+                                                <div key={`${item.event?.title ?? 'planned'}-${idx}`} className="text-[15px] line-clamp-1">
+                                                    {item.event?.title}
+                                                </div>
+                                            ))}
+                                            {plannedEvents.length > 3 && (
+                                                <div className="text-[11px] text-gray-400">
+                                                    +{plannedEvents.length - 3}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="text-6xl font-bold text-[#1d1d1f] dark:text-white tracking-tighter flex items-end leading-none">
