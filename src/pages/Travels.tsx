@@ -882,7 +882,6 @@ const ImagePreloader: React.FC<{ src: string }> = React.memo(({ src }) => {
 
 const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destination, onClose }) => {
   if (!destination) return null;
-  const [showMedia, setShowMedia] = useState(false);
 
   const overlayVariants = {
     hidden: { opacity: 0 },
@@ -912,18 +911,6 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
     }
   };
 
-  useEffect(() => {
-    setShowMedia(false);
-    const fallbackId = window.setTimeout(() => setShowMedia(true), 500);
-    return () => window.clearTimeout(fallbackId);
-  }, [destination.id]);
-
-  const handleCardAnimationComplete = (definition: string | object) => {
-    if (definition === 'visible') {
-      requestAnimationFrame(() => setShowMedia(true));
-    }
-  };
-
   return (
     <motion.div
       variants={overlayVariants}
@@ -939,22 +926,17 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
         animate="visible"
         exit="exit"
         className="relative w-full max-w-2xl max-h-[80vh] overflow-auto overscroll-contain rounded-[28px] bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-2xl border border-white/30 dark:border-white/10 shadow-2xl will-change-transform"
-        onAnimationComplete={handleCardAnimationComplete}
         onClick={(e) => e.stopPropagation()}
       >
           {/* 封面图片 */}
           <div className="w-full h-48 relative">
-            {showMedia ? (
-              <img
-                src={destination.photos[0]}
-                alt={destination.city}
-                className="w-full h-full object-cover"
-                loading="eager"
-                decoding="async"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-gray-200/80 to-gray-100/40 dark:from-[#1f1f24] dark:to-[#0f0f12]" />
-            )}
+            <img
+              src={destination.photos[0]}
+              alt={destination.city}
+              className="w-full h-full object-cover"
+              loading="eager"
+              decoding="async"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
             {/* 红绿灯 - 叠在封面图左上角 */}
             <div className="absolute top-3 left-4 flex items-center gap-2">
@@ -997,27 +979,19 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
                 </svg>
                 旅行照片集
               </h3>
-              {!showMedia ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {destination.photos.slice(0, 4).map((_, idx) => (
-                    <div key={`placeholder-${idx}`} className="rounded-xl overflow-hidden aspect-video bg-black/5 dark:bg-white/5 animate-pulse"></div>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {destination.photos.map((photo, idx) => (
-                    <div key={idx} className="rounded-xl overflow-hidden aspect-video">
-                      <img
-                        src={photo}
-                        alt={`${destination.city} ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-3">
+                {destination.photos.map((photo, idx) => (
+                  <div key={idx} className="rounded-xl overflow-hidden aspect-video">
+                    <img
+                      src={photo}
+                      alt={`${destination.city} ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      loading={idx === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
       </motion.div>
@@ -1335,12 +1309,12 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({ onSelectDestinat
           <span>按日期排序 - 最新旅行优先显示</span>
         </div>
 
-        {/* 预加载当前悬停的目的地图片（控制数量，避免阻塞弹窗动画） */}
+        {/* 预加载当前悬停的目的地图片 */}
         {hoveredDestination && (
           <>
             {travelData
               .find(dest => dest.id === hoveredDestination)
-              ?.photos.slice(0, 2)
+              ?.photos
               .map((photo, idx) => (
                 <ImagePreloader key={`preload-${hoveredDestination}-${idx}`} src={photo} />
               ))
