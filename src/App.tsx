@@ -30,7 +30,7 @@ import { PerformanceProvider, usePerformanceMode } from './contexts/PerformanceC
 import RestrictedAccess from './components/RestrictedAccess'
 import ScrollToTop from './components/ScrollToTop'
 import { preloadResourcesWithMinTime } from './utils/preloader'
-const bgImage = 'https://img.klpz.net/file/tc/2026/03/13/69b3cbfa2648f_1773390842.webp'
+const bgImage = 'https://image.091026.xyz/i/2026/03/21/19l0uz-6t.webp'
 const bgPlaceholder = 'data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwAwCdASoUAA0APzmEuVOvKKWisAgB4CcJZgCdEf/gPjzNvF5J8s1wAPfa9nR9ymMZZjBVj6isAgWQSgCrEdElEDGRKAq8rb0S2RWQUQoT7MFnf4HPdmIsTiW+I5Tryd7G1yX8IYDqAAAA'
 
 // 将背景图片组件分离，减少重渲染
