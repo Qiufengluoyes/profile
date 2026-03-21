@@ -194,7 +194,7 @@ const DevicesModal: React.FC<DevicesModalProps> = ({
                                                         <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                                         {device.specs.condition}
                                                     </span>
-                                                    <span>Bought: {device.specs.purchaseDate}</span>
+                                                    <span>购买日期: {device.specs.purchaseDate}</span>
                                                     <span>{device.specs.warranty}</span>
                                                 </div>
                                             </div>

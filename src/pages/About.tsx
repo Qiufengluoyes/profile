@@ -86,7 +86,7 @@ const services = [
 
 const siteInfo = [
     { label: '站点名称', value: "枫落丰源 - 存档点" },
-    { label: '版本', value: 'Beta v0.0.15' },
+    { label: '版本', value: 'Release v1.0.14' },
     { label: '主题色', value: '#007AFF  (Apple Blue)' },
     { label: '开源协议', value: 'MIT License' },
     { label: '部署方式', value: 'Vercel' },
@@ -136,7 +136,7 @@ const About = () => {
                     关于本站
                 </h1>
                 <p className="text-base md:text-lg text-[#6c6c6e] dark:text-gray-400 max-w-xl leading-relaxed">
-                    这是 damesck 的个人主页
+                    这是枫落丰源的个人主页
                 </p>
             </motion.div>
 
@@ -209,7 +209,8 @@ const About = () => {
                             </div>
 
                             <p className="mt-4 text-[13px] text-[#1d1d1f]/50 dark:text-white/50 leading-relaxed">
-                                本站代码完全开源，欢迎 Star 或 Fork。如果你喜欢这个设计，请保留 Credit。
+                                本站基于 damesck 的主题构建，并进行了大量的定制和优化以适应我的个人需求。<br />
+                                本站代码完全开源，欢迎前往 Star 或 Fork。如果你喜欢这个设计，请保留 Credit。
                             </p>
                         </SectionCard>
                     </motion.div>

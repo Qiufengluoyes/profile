@@ -251,8 +251,8 @@ function AppInner() {
           className="flex justify-center px-4 pb-24 md:pb-6 mt-auto"
         >
           <div className="inline-flex flex-wrap justify-center items-center gap-x-1.5 gap-y-1 px-5 py-2 min-h-10 bg-white/30 dark:bg-[#1c1c1e]/30 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 rounded-full text-sm text-gray-500 dark:text-gray-400 text-center">
-            <span>Designed By damesck · Copyright © 2026</span>
-            <a href="/" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">damesck.net</a>
+            <span>Used By 枫落丰源 · Copyright © {new Date().getFullYear()}</span>
+            <a href="/" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">feng1026.top</a>
             <span>All Right Reserved.</span>
           </div>
         </motion.footer>
