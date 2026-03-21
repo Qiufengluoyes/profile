@@ -137,7 +137,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             <div className="relative z-10 w-full h-full p-5 flex flex-col md:flex-row gap-5">
 
                 {/* Left Column: Timeline & Header (65%) */}
-                <div className="flex-[1.8] flex flex-col relative min-h-0">
+                <div className="flex-none md:flex-[1.8] flex flex-col relative min-h-0">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4 flex-shrink-0">
                         <div className="flex items-center">
@@ -207,7 +207,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                 <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-white/20 to-transparent flex-shrink-0"></div>
 
                 {/* Right Column: Time Status (35%) */}
-                <div className="flex-1 flex flex-col justify-between bg-white/30 dark:bg-black/20 rounded-2xl p-4 backdrop-blur-md border border-white/20 dark:border-white/5 shadow-inner min-h-0">
+                <div className="flex-none md:flex-1 flex flex-col justify-between bg-white/30 dark:bg-black/20 rounded-2xl p-4 backdrop-blur-md border border-white/20 dark:border-white/5 shadow-inner min-h-0">
 
                     <div>
                         <div className="text-[10px] font-bold text-[#1d1d1f]/40 dark:text-white/40 uppercase tracking-wider mb-2">
