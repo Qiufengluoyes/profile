@@ -934,7 +934,7 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
               src={destination.photos[0]}
               alt={destination.city}
               className="w-full h-full object-cover"
-              loading="eager"
+              loading="lazy"
               decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -986,7 +986,7 @@ const DestinationModal: React.FC<DestinationModalProps> = React.memo(({ destinat
                       src={photo}
                       alt={`${destination.city} ${idx + 1}`}
                       className="w-full h-full object-cover"
-                      loading={idx === 0 ? "eager" : "lazy"}
+                      loading="lazy"
                       decoding="async"
                     />
                   </div>
