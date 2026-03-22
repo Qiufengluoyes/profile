@@ -31,7 +31,7 @@ import RestrictedAccess from './components/RestrictedAccess'
 import ScrollToTop from './components/ScrollToTop'
 import { preloadResourcesWithMinTime } from './utils/preloader'
 const bgImage = 'https://image.091026.xyz/i/2026/03/21/19l0uz-6t.webp'
-const bgPlaceholder = 'data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwAwCdASoUAA0APzmEuVOvKKWisAgB4CcJZgCdEf/gPjzNvF5J8s1wAPfa9nR9ymMZZjBVj6isAgWQSgCrEdElEDGRKAq8rb0S2RWQUQoT7MFnf4HPdmIsTiW+I5Tryd7G1yX8IYDqAAAA'
+const bgPlaceholder = '../public/img/bg-placeholder.webp'
 
 // 将背景图片组件分离，减少重渲染
 const BackgroundImage = memo(() => {

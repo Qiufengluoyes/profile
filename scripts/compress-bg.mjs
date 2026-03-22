@@ -6,7 +6,7 @@ import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const input = path.join(__dirname, '../src/img/Background_image.jpg');
 const outputAvif = path.join(__dirname, '../public/img/Background_image.avif');
-const outputPlaceholder = path.join(__dirname, '../public/img/bg-placeholder1.webp');
+const outputPlaceholder = path.join(__dirname, '../public/img/bg-placeholder.webp');
 
 // 生成 AVIF
 await sharp(input)
