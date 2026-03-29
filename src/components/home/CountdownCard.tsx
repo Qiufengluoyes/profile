@@ -73,6 +73,12 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
         const min = String(value.getMinutes()).padStart(2, '0');
         return `${y}-${m}-${d} ${hh}:${min}`;
     };
+    const formatDateOnly = (value: Date) => {
+        const y = value.getFullYear();
+        const m = String(value.getMonth() + 1).padStart(2, '0');
+        const d = String(value.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
 
     const today = normalizeToMinute(new Date());
     const todayTime = today.getTime();
@@ -153,7 +159,7 @@ const CountdownCard: React.FC<CountdownCardProps> = ({
 
     const displayDate = hasSchedule
         ? (isBeforeStart ? (topEvent?.Startdate || topEvent?.targetDate) : topEvent?.targetDate)
-        : formatLocalDate(today);
+        : formatDateOnly(today);
 
     const inProgressLabelClass = ongoingCount >= 3
         ? 'text-sm'
